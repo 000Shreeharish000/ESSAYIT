@@ -1,5 +1,4 @@
-// This is a simplified auth implementation for demo purposes
-// In a real app, you would use NextAuth.js or a similar library
+// This file contains functions to handle user authentication.
 
 export async function signIn() {
   // Simulate a sign-in process

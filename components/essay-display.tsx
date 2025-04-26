@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Download, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { jsPDF } from "jspdf"  // Import jsPDF
 
 interface EssayDisplayProps {
   essay: {
@@ -20,27 +19,38 @@ interface EssayDisplayProps {
 export default function EssayDisplay({ essay, imageUrl, onReset }: EssayDisplayProps) {
   const [downloading, setDownloading] = useState(false)
 
-  // Combine all content into a single essay
   const fullEssay = `${essay.content} ${essay.sections.map((section) => section.content).join(" ")}`
 
   const handleDownload = async () => {
     setDownloading(true)
 
     try {
-      // Create a new jsPDF instance
-      const doc = new jsPDF()
-
-      // Add the title to the PDF
-      doc.setFontSize(22)
-      doc.text(essay.title, 10, 20)  // Title at (10, 20)
-
-      // Add content to the PDF
-      doc.setFontSize(12)
-      const content = `${essay.content} ${essay.sections.map((section) => section.content).join(" ")}`
-      doc.text(content, 10, 30)  // Content starting at (10, 30)
-
-      // Save the PDF as 'essay.pdf'
-      doc.save(`${essay.title.replace(/\s+/g, "_")}.pdf`)
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${essay.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+            h1 { color: #8b5cf6; }
+            p { line-height: 1.6; }
+          </style>
+        </head>
+        <body>
+          <h1>${essay.title}</h1>
+          <p>${fullEssay}</p>
+        </body>
+        </html>
+      `
+      const blob = new Blob([htmlContent], { type: "text/html" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${essay.title.replace(/\s+/g, "_")}.html`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
     } catch (error) {
       console.error("Error downloading essay:", error)
     } finally {
@@ -68,7 +78,7 @@ export default function EssayDisplay({ essay, imageUrl, onReset }: EssayDisplayP
                 className="neon-button"
               >
                 <Download className="mr-2 h-4 w-4" />
-                {downloading ? "Downloading..." : "Download as PDF"}
+                {downloading ? "Downloading..." : "Download"}
               </Button>
               <Button variant="ghost" size="sm" onClick={onReset}>
                 <RefreshCw className="mr-2 h-4 w-4" />
@@ -97,6 +107,24 @@ export default function EssayDisplay({ essay, imageUrl, onReset }: EssayDisplayP
           </div>
         </div>
       </div>
+
+      {/* NEW SCROLLING TEXT ADDED HERE */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 1 }}
+        className="mt-6 text-center"
+      >
+        <motion.p
+          initial={{ x: "-100%" }}
+          animate={{ x: 0 }}
+          transition={{ duration: 3, ease: "easeOut" }}
+          className="text-purple-400 text-lg font-semibold"
+        >
+          Download to get the perfect format!
+        </motion.p>
+      </motion.div>
     </motion.div>
   )
 }
+

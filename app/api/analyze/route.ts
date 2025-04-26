@@ -22,23 +22,34 @@ export async function POST(request: NextRequest) {
 
     // Prepare the prompt
     const prompt = `
-      Analyze this image and write a detailed essay about it. 
-      The essay should be approximately ${wordCount} words.
-      
-      The essay should have a creative title and be written as a continuous piece of text.
-      Do not include subheadings or sections - just write a flowing, cohesive essay.
-      
-      Make the essay engaging, informative, and well-structured.
-      
+       Analyze this image and write a detailed essay about it. 
+      The essay should have a creative title 
       Return the response in the following JSON format:
       {
         "title": "Essay Title",
         "content": "The full essay content...",
         "sections": []
       }
+1. A creative and engaging title
+2. Introduction (4-5 sentences) that presents the image and main points
+3. Four distinct sections with appropriate subheadings:
+   - First subheading: [specific aspect of the image]
+   - Second subheading: [specific aspect of image]  
+   - Third subheading: [specific aspect of image]
+   - Fourth subheading: [specific aspect of image]
+   - Each subheading should be bold
+  - Insert two blank lines before each subheading
+4. Conclusion (3-4 sentences) that summarizes the main points and provides closing thoughts
+Format requirements:
+- Format each subheading on its own separate line
+- Each section should be 2-3 lines
+- Total word count: approximately ${wordCount} words
+- Use a formal tone and avoid slang
+
+Make the essay engaging, informative, and well-structured 
     `
 
-    // Create a part for the image
+    
     const imagePart = {
       inlineData: {
         data: Buffer.from(imageBytes).toString("base64"),
@@ -46,12 +57,12 @@ export async function POST(request: NextRequest) {
       },
     }
 
-    // Generate content
+    
     const result = await model.generateContent([prompt, imagePart])
     const response = await result.response
     const text = response.text()
 
-    // Parse the JSON response
+    
     try {
       const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/{[\s\S]*}/)
 
@@ -62,8 +73,8 @@ export async function POST(request: NextRequest) {
       } else {
         // If JSON parsing fails, create a structured response from the text
         const lines = text.split("\n").filter((line) => line.trim() !== "")
-        const title = "Analysis of Your Image"
-        const content = text.replace(/^#\s*.*$/m, "").trim() // Remove the title line if it exists
+        const title = "ESSAY FROM YOUR IMAGE"
+        const content = text.replace(/^#\s*.*$/m, "").trim() 
 
         return NextResponse.json({
           title,
@@ -72,7 +83,7 @@ export async function POST(request: NextRequest) {
         })
       }
     } catch (error) {
-      console.error("Error parsing Gemini response:", error)
+      console.error("Error parsing response:", error)
       return NextResponse.json({ error: "Failed to parse the AI response" }, { status: 500 })
     }
   } catch (error) {
