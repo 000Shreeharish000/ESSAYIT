@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Download, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { motion } from "framer-motion"
+import { jsPDF } from "jspdf"  // Import jsPDF
 
 interface EssayDisplayProps {
   essay: {
@@ -26,37 +27,20 @@ export default function EssayDisplay({ essay, imageUrl, onReset }: EssayDisplayP
     setDownloading(true)
 
     try {
-      // Create a simple HTML structure for the PDF
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${essay.title}</title>
-          <style>
-            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-            h1 { color: #8b5cf6; }
-            p { line-height: 1.6; }
-          </style>
-        </head>
-        <body>
-          <h1>${essay.title}</h1>
-          <p>${fullEssay}</p>
-        </body>
-        </html>
-      `
+      // Create a new jsPDF instance
+      const doc = new jsPDF()
 
-      // Create a Blob from the HTML content
-      const blob = new Blob([htmlContent], { type: "text/html" })
+      // Add the title to the PDF
+      doc.setFontSize(22)
+      doc.text(essay.title, 10, 20)  // Title at (10, 20)
 
-      // Create a download link and trigger it
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `${essay.title.replace(/\s+/g, "_")}.html`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      // Add content to the PDF
+      doc.setFontSize(12)
+      const content = `${essay.content} ${essay.sections.map((section) => section.content).join(" ")}`
+      doc.text(content, 10, 30)  // Content starting at (10, 30)
+
+      // Save the PDF as 'essay.pdf'
+      doc.save(`${essay.title.replace(/\s+/g, "_")}.pdf`)
     } catch (error) {
       console.error("Error downloading essay:", error)
     } finally {
@@ -84,7 +68,7 @@ export default function EssayDisplay({ essay, imageUrl, onReset }: EssayDisplayP
                 className="neon-button"
               >
                 <Download className="mr-2 h-4 w-4" />
-                {downloading ? "Downloading..." : "Download as HTML"}
+                {downloading ? "Downloading..." : "Download as PDF"}
               </Button>
               <Button variant="ghost" size="sm" onClick={onReset}>
                 <RefreshCw className="mr-2 h-4 w-4" />
