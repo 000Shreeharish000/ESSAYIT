@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const imageBytes = await imageFile.arrayBuffer()
 
     // Access the model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" })
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
     // Prepare the prompt
     const prompt = `
